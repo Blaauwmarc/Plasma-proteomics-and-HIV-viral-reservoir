@@ -51,7 +51,7 @@ myfmt <- function(v) {
   ifelse(v<1e-16, "<1e-16", ifelse(v<0.001, format(v, digits=3, scientific=T), round(v, 3)))
 }
 
-tiff(file = "Figure 1 correlationplot proteomics and reservoir.tiff", units= "in", height=8 , width=10, res = 600)
+tiff(file = "Figure1_correlationplot_proteomics_and_reservoir.tiff", units= "in", height=8 , width=10, res = 600)
 ggplot() + 
   geom_tile(aes(x= Var1, y = Var2, fill = value), data = cor_r_mat) + 
   geom_text(aes(x= Var1, y = Var2, label = round(value,3)), data = cor_r_mat, color = "black", size=4) +
@@ -70,10 +70,9 @@ ggplot() +
 dev.off()
 
 -------------------------------------------------------------------------------------------------------------
+### PCA analysis and detection of outliers using the OLINK panel
   
-  ### PCA analysis and detection of outliers using the OLINK panel
-  
-  OLINKproteinsnew<-read_xlsx("200HIV_Explore_QC_210_1293.xlsx")
+OLINKproteinsnew<-read_xlsx("200HIV_Explore_QC_210_1293.xlsx")
 OLINKreservoir<-read_xlsx("OLINKreservoirclinic.xlsx")
 colnames(OLINKproteinsnew)[1] <- "record_id"  #change first column name 
 OLINKreservoirnew<- OLINKreservoir[c(1:3)]  #only select reservoir measurements
@@ -84,7 +83,7 @@ OLINKreservoirnew2<- merge(OLINKproteinsnew, OLINKreservoirnew, by="record_id")
 mydata.olink.pca <- prcomp(OLINKreservoirnew2[c(2:1294)], center = TRUE, scale. = TRUE) ### add only the column numbers with the protein measurements
 
 # Plot the PC1 vs PC2
-png(file = "PCA plot proteomic analsis 200HIV with outliers.png", units= "cm", height=8 , width=12, res = 300)
+png(file = "PCA_plot_proteomic_analsis_200HIV_with_outliers.png", units= "cm", height=8 , width=12, res = 300)
 ggbiplot(mydata.olink.pca,ellipse=FALSE,obs.scale = 0.8, var.scale = 0.5, var.axes = FALSE)+
   theme_bw()+
   theme(panel.grid.major = element_blank(),
@@ -94,9 +93,7 @@ ggbiplot(mydata.olink.pca,ellipse=FALSE,obs.scale = 0.8, var.scale = 0.5, var.ax
 dev.off()
 
 ## check which subjects are outliers
-# Measuring outlierness -------------------------------------------------------------------------
-# The standard way to detect outliers is the criterion of being more than 
-# 3 standard deviations away from the mean.
+# The standard way to detect outliers is the criterion of being more than 3 standard deviations away from the mean.
 U_mydata <- mydata.olink.pca$x
 mydata_outliers <- apply(U_mydata, 2, function(x) which( abs(x - mean(x)) > (3 * sd(x)) ))
 head(mydata_outliers)
@@ -105,7 +102,7 @@ head(mydata_outliers)
 Outlierlist<-read_xlsx("Olinkoutlierlist.xlsx")
 OLinkreservoiroutlierlist<-merge(OLINKreservoirnew2, Outlierlist, by = "record_id")
 
-png(file = "supplementary figure 1a.png", units= "cm", height=12 , width=12, res = 300)
+png(file = "supplementary_figure1a.png", units= "cm", height=12 , width=12, res = 300)
 ggbiplot(mydata.olink.pca,ellipse=FALSE,  labels=rownames(OLINKreservoirnew2$record_id), groups = OLinkreservoiroutlierlist$Outlier, obs.scale = 0.5, var.scale = 0.5, var.axes = FALSE)+
   theme_bw()+
   scale_colour_manual(labels = c("No outlier", "Outlier"),  values =c("black", "red")) +
@@ -125,7 +122,7 @@ OLINKreservoirnewnooutliers<-OLINKreservoirnewnooutliers[-2]
 no_outliers_mydata.pca <- prcomp(OLINKreservoirnewnooutliers[c(2:1294)], center = TRUE, scale. = TRUE)
 
 # Plot the PC1 vs PC2 
-png(file = "Supplementary figure 1b.png", units = "cm", height = 12, width = 12, res = 300)
+png(file = "Supplementary_figure1b.png", units = "cm", height = 12, width = 12, res = 300)
 ggbiplot(no_outliers_mydata.pca,ellipse=FALSE,obs.scale = 0.5, var.scale = 0.5, var.axes = FALSE)+
   theme_bw()+
   theme(panel.grid.major = element_blank(),
@@ -134,14 +131,14 @@ ggbiplot(no_outliers_mydata.pca,ellipse=FALSE,obs.scale = 0.5, var.scale = 0.5, 
         plot.caption = element_text(hjust = 1))
 dev.off()
 -------------------------------------------------------------------------------------------------------
-  # Association analysis between plasma proteomics and CA HIV DNA and RNA
-  #model 1: showed below: RNA or DNA ~ proteome + Age + Sex
-  #model 2:  RNA or DNA ~ proteome + Age + Sex + CD4 nadir + HIV duration
+# Association analysis between plasma proteomics and CA HIV DNA and RNA
+# model 1: showed below: RNA or DNA ~ proteome + Age + Sex
+# model 2:  RNA or DNA ~ proteome + Age + Sex + CD4 nadir + HIV duration
   
-  metadataHIV200<-read_xlsx("HIV200_dataset.xlsx")
+metadataHIV200<-read_xlsx("HIV200_dataset.xlsx")
 ## filter relevant variables
 HIV200<-metadataHIV200[c(1, 4, 5, 34, 41, 42, 79)]
-##add reservoirdata
+## add reservoirdata
 OLINKreservoirdata <- HIV200 %>% left_join(HIVreservoirdataset)
 
 # Association analysis between plasma proteomics and CA HIV RNA (continuous variable)
@@ -165,13 +162,13 @@ colnames(design_covRNA) <-c("Participant", "RNAreservoirsize" , "Age", "Sex")
 OLINKreservoirRNAp <- OLINKreservoirRNA[,c(-1:-4)] #keep only proteins
 OLINkreservoirRNAp_tr <- as.matrix(t(OLINkreservoirRNAp))  # Transpose data
 
-#Fitting models for associated genes----------------------------------------------------------------
+# Fitting models for associated genes----------------------------------------------------------------
 fit1_covRNA <-lmFit(OLINkreservoirRNAp_tr, design_covRNA)
 fit2_covRNA <- eBayes(fit1_covRNA)
 
 DEP_covRNA <- topTable(fit2_covRNA, coef = "RNAreservoirsize", adjust = "BH", number = 1293)
 
-#Save results and maken volcano plot
+# Save results and maken volcano plot
 write.csv(DEP_covRNA, "results diff analyse total OLINK panel for CA HIV RNA Age and Sex corrected.csv")
 limma_covR <- read.csv("results diff analyse total OLINK panel for CA HIV RNA Age and Sex corrected.csv", check.names = FALSE)
 colnames(limma_covR)[1] <- 'protein'
@@ -206,6 +203,8 @@ ggplot(limma_covR, aes(x = logFC, y = -log10(P.Value),label = protein)) +
   theme( panel.grid.major = element_blank(),text = element_text(size=14),
          panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), axis.text=element_text(size=14))
 dev.off()
+
+---------------------------------------------------------------
 
 ---------------------------------------------------------------
   
